@@ -1,25 +1,64 @@
 package com.example.todo;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.PreDestroy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class TaskService {
 
+    private static final Logger logger = LoggerFactory.getLogger(TaskService.class);
+
     private final TaskRepository taskRepository;
+    private final Map<String, Task> taskCache = new HashMap<>();
 
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
 
+    @PostConstruct
+    public void initCache() {
+        List<Task> tasks = taskRepository.findAll();
+        for (Task task : tasks) {
+            if (task.getId() != null) {
+                taskCache.put(task.getId().toString(), task);
+            }
+        }
+        logger.info("Task cache initialized with {} tasks", taskCache.size());
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        logger.info("Cleaning up TaskService, cache size is {}", taskCache.size());
+        taskCache.clear();
+    }
+
     public Task create(Task task) {
-        return taskRepository.create(task);
+        Task created = taskRepository.create(task);
+        if (created.getId() != null) {
+            taskCache.put(created.getId().toString(), created);
+        }
+        return created;
     }
 
     public Optional<Task> findById(Long id) {
-        return taskRepository.findById(id);
+        if (id == null) {
+            return Optional.empty();
+        }
+        Task cached = taskCache.get(id.toString());
+        if (cached != null) {
+            return Optional.of(cached);
+        }
+        Optional<Task> found = taskRepository.findById(id);
+        found.ifPresent(task -> taskCache.put(id.toString(), task));
+        return found;
     }
 
     public List<Task> findAll() {
@@ -27,11 +66,18 @@ public class TaskService {
     }
 
     public Task update(Task task) {
-        return taskRepository.update(task);
+        Task updated = taskRepository.update(task);
+        if (updated.getId() != null) {
+            taskCache.put(updated.getId().toString(), updated);
+        }
+        return updated;
     }
 
     public void deleteById(Long id) {
         taskRepository.deleteById(id);
+        if (id != null) {
+            taskCache.remove(id.toString());
+        }
     }
 }
 
