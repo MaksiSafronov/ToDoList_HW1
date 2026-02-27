@@ -1,5 +1,7 @@
-package com.example.todo;
+package com.example.todo.service;
 
+import com.example.todo.model.Task;
+import com.example.todo.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 

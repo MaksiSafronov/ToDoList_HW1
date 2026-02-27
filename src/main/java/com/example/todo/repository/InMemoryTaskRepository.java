@@ -1,35 +1,22 @@
-package com.example.todo;
+package com.example.todo.repository;
+
+import com.example.todo.model.Task;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class StubTaskRepository implements TaskRepository {
+@Repository
+@Primary
+public class InMemoryTaskRepository implements TaskRepository {
 
-    private final Map<Long, Task> tasks = new LinkedHashMap<>();
+    private final Map<Long, Task> tasks = new ConcurrentHashMap<>();
     private final AtomicLong idSequence = new AtomicLong();
-
-    public StubTaskRepository() {
-        Task first = new Task();
-        first.setId(1L);
-        first.setTitle("Sample task 1");
-        first.setDescription("First stub task");
-        first.setCompleted(false);
-
-        Task second = new Task();
-        second.setId(2L);
-        second.setTitle("Sample task 2");
-        second.setDescription("Second stub task");
-        second.setCompleted(true);
-
-        tasks.put(first.getId(), first);
-        tasks.put(second.getId(), second);
-
-        idSequence.set(2L);
-    }
 
     @Override
     public Task create(Task task) {

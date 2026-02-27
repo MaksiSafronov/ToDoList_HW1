@@ -1,5 +1,7 @@
-package com.example.todo;
+package com.example.todo.service;
 
+import com.example.todo.model.Task;
+import com.example.todo.repository.TaskRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;

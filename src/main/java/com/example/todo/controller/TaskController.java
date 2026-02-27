@@ -1,5 +1,7 @@
-package com.example.todo;
+package com.example.todo.controller;
 
+import com.example.todo.model.Task;
+import com.example.todo.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
