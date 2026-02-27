@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,6 +22,12 @@ public class TaskService {
     private final TaskRepository taskRepository;
     private final Map<String, Task> taskCache = new HashMap<>();
 
+    @Value("${app.name}")
+    private String appName;
+
+    @Value("${app.version}")
+    private String appVersion;
+
     public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
@@ -33,7 +40,7 @@ public class TaskService {
                 taskCache.put(task.getId().toString(), task);
             }
         }
-        logger.info("Task cache initialized with {} tasks", taskCache.size());
+        logger.info("Task cache initialized with {} tasks for {} {}", taskCache.size(), appName, appVersion);
     }
 
     @PreDestroy
