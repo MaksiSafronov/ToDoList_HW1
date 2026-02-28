@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Сервисный слой для CRUD-операций над задачами.
+ * Использует {@link com.example.todo.repository.TaskRepository} как источник данных и поддерживает простой кэш в памяти.
+ */
 @Service
 public class TaskService {
 

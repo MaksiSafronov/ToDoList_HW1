@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * REST-контроллер для управления задачами через CRUD API.
+ * Базовый путь: {@code /api/tasks}.
+ */
 @RestController
 @RequestMapping("/api/tasks")
 public class TaskController {

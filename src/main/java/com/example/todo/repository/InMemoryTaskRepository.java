@@ -11,6 +11,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * In-memory реализация {@link TaskRepository} на основе {@link ConcurrentHashMap}.
+ * Используется по умолчанию благодаря {@code @Primary}.
+ */
 @Repository
 @Primary
 public class InMemoryTaskRepository implements TaskRepository {
