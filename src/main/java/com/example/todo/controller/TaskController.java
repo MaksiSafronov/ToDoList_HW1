@@ -1,5 +1,7 @@
-package com.example.todo;
+package com.example.todo.controller;
 
+import com.example.todo.model.Task;
+import com.example.todo.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,8 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * REST-контроллер для управления задачами через CRUD API.
+ * Базовый путь: {@code /api/tasks}.
+ */
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     private final TaskService taskService;

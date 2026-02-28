@@ -1,10 +1,16 @@
-package com.example.todo;
+package com.example.todo.service;
 
+import com.example.todo.model.Task;
+import com.example.todo.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * Сервис для демонстрации одновременной инжекции двух реализаций {@link com.example.todo.repository.TaskRepository}
+ * с использованием {@code @Primary} и {@code @Qualifier}.
+ */
 @Service
 public class TaskStatisticsService {
 
