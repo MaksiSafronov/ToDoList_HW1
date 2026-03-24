@@ -1,8 +1,12 @@
-package com.example.todo;
+package com.example.todo.repository;
 
+import com.example.todo.model.Task;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Контракт репозитория задач с базовыми CRUD-операциями.
+ */
 public interface TaskRepository {
 
     Task create(Task task);

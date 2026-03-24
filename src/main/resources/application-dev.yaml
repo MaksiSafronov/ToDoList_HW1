@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+server:
+  port: 8081
+
+logging:
+  level:
+    root: DEBUG
+    org.springframework.web: DEBUG
+    com.example.todo: DEBUG
+

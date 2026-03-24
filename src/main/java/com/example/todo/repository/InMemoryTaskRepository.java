@@ -1,5 +1,6 @@
-package com.example.todo;
+package com.example.todo.repository;
 
+import com.example.todo.model.Task;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
@@ -10,6 +11,10 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * In-memory реализация {@link TaskRepository} на основе {@link ConcurrentHashMap}.
+ * Используется по умолчанию благодаря {@code @Primary}.
+ */
 @Repository
 @Primary
 public class InMemoryTaskRepository implements TaskRepository {

@@ -1,4 +1,6 @@
-package com.example.todo;
+package com.example.todo.repository;
+
+import com.example.todo.model.Task;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -7,6 +9,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Заглушка {@link TaskRepository} с фиксированными начальными данными в памяти.
+ * Обычно подключается как отдельный бин через конфигурацию.
+ */
 public class StubTaskRepository implements TaskRepository {
 
     private final Map<Long, Task> tasks = new LinkedHashMap<>();

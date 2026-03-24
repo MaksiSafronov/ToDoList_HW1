@@ -1,3 +1,10 @@
+server:
+  port: 8081
+
+app:
+  name: todo-application
+  version: 1.0.0
+
 spring:
   application:
     name: todo
