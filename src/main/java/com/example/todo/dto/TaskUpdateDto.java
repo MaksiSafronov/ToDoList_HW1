@@ -9,7 +9,7 @@ public class TaskUpdateDto {
 
     private String title;
     private String description;
-    private boolean completed;
+    private Boolean completed;
     private LocalDate dueDate;
     private Priority priority;
     private Set<String> tags;
@@ -30,11 +30,11 @@ public class TaskUpdateDto {
         this.description = description;
     }
 
-    public boolean isCompleted() {
+    public Boolean getCompleted() {
         return completed;
     }
 
-    public void setCompleted(boolean completed) {
+    public void setCompleted(Boolean completed) {
         this.completed = completed;
     }
 
