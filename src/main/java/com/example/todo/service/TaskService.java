@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Сервисный слой для CRUD-операций над задачами.
@@ -24,7 +24,7 @@ public class TaskService {
     private static final Logger logger = LoggerFactory.getLogger(TaskService.class);
 
     private final TaskRepository taskRepository;
-    private final Map<String, Task> taskCache = new HashMap<>();
+    private final Map<String, Task> taskCache = new ConcurrentHashMap<>();
 
     @Value("${app.name}")
     private String appName;
