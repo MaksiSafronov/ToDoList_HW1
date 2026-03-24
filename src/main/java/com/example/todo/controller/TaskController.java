@@ -3,9 +3,12 @@ package com.example.todo.controller;
 import com.example.todo.dto.TaskCreateDto;
 import com.example.todo.dto.TaskResponseDto;
 import com.example.todo.dto.TaskUpdateDto;
+import com.example.todo.dto.validation.OnCreate;
+import com.example.todo.dto.validation.OnUpdate;
 import com.example.todo.mapper.TaskMapper;
 import com.example.todo.model.Task;
 import com.example.todo.service.TaskService;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,14 +55,15 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponseDto> create(@RequestBody TaskCreateDto dto) {
+    public ResponseEntity<TaskResponseDto> create(@Validated(OnCreate.class) @RequestBody TaskCreateDto dto) {
         Task task = taskMapper.toEntity(dto);
         Task created = taskService.create(task);
         return ResponseEntity.status(HttpStatus.CREATED).body(taskMapper.toResponseDto(created));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponseDto> update(@PathVariable Long id, @RequestBody TaskUpdateDto dto) {
+    public ResponseEntity<TaskResponseDto> update(@PathVariable Long id,
+                                                  @Validated(OnUpdate.class) @RequestBody TaskUpdateDto dto) {
         Optional<Task> existing = taskService.findById(id);
         if (existing.isEmpty()) {
             return ResponseEntity.notFound().build();

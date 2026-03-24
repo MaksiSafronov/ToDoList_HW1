@@ -1,17 +1,27 @@
 package com.example.todo.dto;
 
+import com.example.todo.dto.validation.OnUpdate;
 import com.example.todo.model.Priority;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 import java.util.Set;
 
 public class TaskUpdateDto {
 
+    @Size(min = 3, max = 100, groups = OnUpdate.class)
     private String title;
+
+    @Size(max = 500, groups = OnUpdate.class)
     private String description;
     private Boolean completed;
+
+    @FutureOrPresent(groups = OnUpdate.class)
     private LocalDate dueDate;
     private Priority priority;
+
+    @Size(max = 5, groups = OnUpdate.class)
     private Set<String> tags;
 
     public String getTitle() {
