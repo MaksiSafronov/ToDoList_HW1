@@ -1,5 +1,6 @@
 package com.example.todo.dto;
 
+import com.example.todo.dto.validation.DueDateNotBeforeCreation;
 import com.example.todo.dto.validation.OnUpdate;
 import com.example.todo.model.Priority;
 import jakarta.validation.constraints.FutureOrPresent;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.Set;
 
+@DueDateNotBeforeCreation(groups = OnUpdate.class)
 public class TaskUpdateDto {
 
     @Size(min = 3, max = 100, groups = OnUpdate.class)
