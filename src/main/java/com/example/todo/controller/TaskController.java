@@ -40,10 +40,11 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponseDto> getAll() {
-        return taskService.findAll().stream()
+    public ResponseEntity<List<TaskResponseDto>> getAll() {
+        List<TaskResponseDto> body = taskService.findAll().stream()
                 .map(taskMapper::toResponseDto)
                 .toList();
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping("/{id}")

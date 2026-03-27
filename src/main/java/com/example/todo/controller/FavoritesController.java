@@ -56,12 +56,13 @@ public class FavoritesController {
     }
 
     @GetMapping
-    public List<TaskResponseDto> getFavorites(HttpSession session) {
-        return favoritesService.getFavoriteTaskIds(session).stream()
+    public ResponseEntity<List<TaskResponseDto>> getFavorites(HttpSession session) {
+        List<TaskResponseDto> body = favoritesService.getFavoriteTaskIds(session).stream()
                 .map(taskService::findById)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .map(taskMapper::toResponseDto)
                 .toList();
+        return ResponseEntity.ok(body);
     }
 }

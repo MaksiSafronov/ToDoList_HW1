@@ -66,10 +66,11 @@ public class AttachmentController {
     }
 
     @GetMapping("/tasks/{taskId}/attachments")
-    public List<AttachmentResponseDto> getTaskAttachments(@PathVariable Long taskId) {
-        return attachmentService.getAttachmentsByTaskId(taskId).stream()
+    public ResponseEntity<List<AttachmentResponseDto>> getTaskAttachments(@PathVariable Long taskId) {
+        List<AttachmentResponseDto> body = attachmentService.getAttachmentsByTaskId(taskId).stream()
                 .map(this::toResponseDto)
                 .toList();
+        return ResponseEntity.ok(body);
     }
 
     private AttachmentResponseDto toResponseDto(TaskAttachment attachment) {
