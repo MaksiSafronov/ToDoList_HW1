@@ -7,6 +7,12 @@ app:
   api:
     version: 2.0.0
 
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
 spring:
   application:
     name: todo

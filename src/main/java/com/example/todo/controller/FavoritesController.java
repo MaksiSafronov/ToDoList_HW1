@@ -1,10 +1,19 @@
 package com.example.todo.controller;
 
+import com.example.todo.dto.ErrorResponse;
 import com.example.todo.dto.TaskResponseDto;
 import com.example.todo.exception.TaskNotFoundException;
 import com.example.todo.mapper.TaskMapper;
 import com.example.todo.service.FavoritesService;
 import com.example.todo.service.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +30,7 @@ import java.util.Optional;
  * Демонстрирует внедрение {@link HttpSession}: Spring создаёт/привязывает сессию к запросу,
  * а {@link FavoritesService} хранит список избранных id в атрибутах этой сессии.
  */
+@Tag(name = "Favorites", description = "Избранные задачи (сессия; для кук используйте credentials)")
 @RestController
 @RequestMapping("/api/favorites")
 public class FavoritesController {
@@ -37,21 +47,38 @@ public class FavoritesController {
         this.taskMapper = taskMapper;
     }
 
+    @Operation(summary = "Добавить задачу в избранное")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Добавлено в избранное"),
+            @ApiResponse(responseCode = "404", description = "Задача не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @PostMapping("/{taskId}")
-    public ResponseEntity<Void> addToFavorites(@PathVariable Long taskId,
-                                               HttpSession session) {
+    public ResponseEntity<Void> addToFavorites(
+            @Parameter(description = "Идентификатор задачи", required = true) @PathVariable Long taskId,
+            HttpSession session) {
         taskService.findById(taskId).orElseThrow(() -> new TaskNotFoundException(taskId));
         favoritesService.addToFavorites(taskId, session);
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Убрать задачу из избранного")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Удалено из избранного")
+    })
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<Void> removeFromFavorites(@PathVariable Long taskId,
-                                                    HttpSession session) {
+    public ResponseEntity<Void> removeFromFavorites(
+            @Parameter(description = "Идентификатор задачи", required = true) @PathVariable Long taskId,
+            HttpSession session) {
         favoritesService.removeFromFavorites(taskId, session);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Список избранных задач", description = "Требует сессию с ранее добавленными id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список задач",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TaskResponseDto.class))))
+    })
     @GetMapping
     public ResponseEntity<List<TaskResponseDto>> getFavorites(HttpSession session) {
         List<TaskResponseDto> body = favoritesService.getFavoriteTaskIds(session).stream()

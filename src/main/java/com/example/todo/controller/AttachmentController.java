@@ -1,8 +1,17 @@
 package com.example.todo.controller;
 
 import com.example.todo.dto.AttachmentResponseDto;
+import com.example.todo.dto.ErrorResponse;
 import com.example.todo.model.TaskAttachment;
 import com.example.todo.service.AttachmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "Attachments", description = "Загрузка и скачивание файлов, привязанных к задачам")
 @RestController
 @RequestMapping("/api")
 public class AttachmentController {
@@ -30,15 +40,34 @@ public class AttachmentController {
         this.attachmentService = attachmentService;
     }
 
-    @PostMapping("/tasks/{taskId}/attachments")
-    public ResponseEntity<AttachmentResponseDto> uploadAttachment(@PathVariable Long taskId,
-                                                                  @RequestParam("file") MultipartFile file) {
+    @Operation(summary = "Загрузить файл вложения", description = "multipart/form-data, поле file")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Файл сохранён",
+                    content = @Content(schema = @Schema(implementation = AttachmentResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Пустой файл или неверные данные",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "Задача не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    @PostMapping(value = "/tasks/{taskId}/attachments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<AttachmentResponseDto> uploadAttachment(
+            @Parameter(description = "Идентификатор задачи", required = true) @PathVariable Long taskId,
+            @Parameter(description = "Файл для загрузки", required = true)
+            @RequestParam("file") MultipartFile file) {
         TaskAttachment stored = attachmentService.storeAttachment(taskId, file);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponseDto(stored));
     }
 
+    @Operation(summary = "Скачать вложение по id")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Поток файла",
+                    content = @Content(mediaType = MediaType.APPLICATION_OCTET_STREAM_VALUE)),
+            @ApiResponse(responseCode = "404", description = "Вложение или файл не найдены",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/attachments/{attachmentId}")
-    public ResponseEntity<Resource> downloadAttachment(@PathVariable Long attachmentId) {
+    public ResponseEntity<Resource> downloadAttachment(
+            @Parameter(description = "Идентификатор вложения", required = true) @PathVariable Long attachmentId) {
         TaskAttachment attachment = attachmentService.getAttachment(attachmentId);
         Resource resource = attachmentService.loadAsResource(attachmentId);
 
@@ -59,14 +88,29 @@ public class AttachmentController {
                 .body(resource);
     }
 
+    @Operation(summary = "Удалить вложение")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Удалено"),
+            @ApiResponse(responseCode = "404", description = "Вложение не найдено",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @DeleteMapping("/attachments/{attachmentId}")
-    public ResponseEntity<Void> deleteAttachment(@PathVariable Long attachmentId) {
+    public ResponseEntity<Void> deleteAttachment(
+            @Parameter(description = "Идентификатор вложения", required = true) @PathVariable Long attachmentId) {
         attachmentService.deleteAttachment(attachmentId);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Список вложений задачи")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список метаданных вложений",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = AttachmentResponseDto.class)))),
+            @ApiResponse(responseCode = "404", description = "Задача не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
     @GetMapping("/tasks/{taskId}/attachments")
-    public ResponseEntity<List<AttachmentResponseDto>> getTaskAttachments(@PathVariable Long taskId) {
+    public ResponseEntity<List<AttachmentResponseDto>> getTaskAttachments(
+            @Parameter(description = "Идентификатор задачи", required = true) @PathVariable Long taskId) {
         List<AttachmentResponseDto> body = attachmentService.getAttachmentsByTaskId(taskId).stream()
                 .map(this::toResponseDto)
                 .toList();
