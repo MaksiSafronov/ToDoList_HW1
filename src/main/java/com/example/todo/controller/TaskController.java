@@ -5,6 +5,7 @@ import com.example.todo.dto.TaskResponseDto;
 import com.example.todo.dto.TaskUpdateDto;
 import com.example.todo.dto.validation.OnCreate;
 import com.example.todo.dto.validation.OnUpdate;
+import com.example.todo.exception.TaskNotFoundException;
 import com.example.todo.mapper.TaskMapper;
 import com.example.todo.model.Task;
 import com.example.todo.service.TaskService;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * REST-контроллер для управления задачами через CRUD API.
@@ -49,10 +49,8 @@ public class TaskController {
 
     @GetMapping("/{id}")
     public ResponseEntity<TaskResponseDto> getById(@PathVariable Long id) {
-        Optional<Task> task = taskService.findById(id);
-        return task.map(taskMapper::toResponseDto)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        Task task = taskService.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
+        return ResponseEntity.ok(taskMapper.toResponseDto(task));
     }
 
     @PostMapping
@@ -65,11 +63,7 @@ public class TaskController {
     @PutMapping("/{id}")
     public ResponseEntity<TaskResponseDto> update(@PathVariable Long id,
                                                   @Validated(OnUpdate.class) @RequestBody TaskUpdateDto dto) {
-        Optional<Task> existing = taskService.findById(id);
-        if (existing.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-        Task taskToUpdate = existing.get();
+        Task taskToUpdate = taskService.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
         taskMapper.updateEntity(dto, taskToUpdate);
         taskToUpdate.setId(id);
         Task updated = taskService.update(taskToUpdate);
@@ -78,10 +72,7 @@ public class TaskController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Optional<Task> existing = taskService.findById(id);
-        if (existing.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        taskService.findById(id).orElseThrow(() -> new TaskNotFoundException(id));
         taskService.deleteById(id);
         return ResponseEntity.noContent().build();
     }

@@ -1,5 +1,6 @@
 package com.example.todo.service;
 
+import com.example.todo.exception.TaskNotFoundException;
 import com.example.todo.model.TaskAttachment;
 import com.example.todo.repository.TaskAttachmentRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +49,7 @@ public class AttachmentService {
             throw new IllegalArgumentException("File must not be empty");
         }
         taskService.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
 
         String originalFileName = StringUtils.cleanPath(
                 Optional.ofNullable(file.getOriginalFilename()).orElse("file")
@@ -87,7 +88,7 @@ public class AttachmentService {
             throw new IllegalArgumentException("Task id must not be null");
         }
         taskService.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
         return taskAttachmentRepository.findByTaskId(taskId);
     }
 

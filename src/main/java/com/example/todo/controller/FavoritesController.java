@@ -1,8 +1,8 @@
 package com.example.todo.controller;
 
 import com.example.todo.dto.TaskResponseDto;
+import com.example.todo.exception.TaskNotFoundException;
 import com.example.todo.mapper.TaskMapper;
-import com.example.todo.model.Task;
 import com.example.todo.service.FavoritesService;
 import com.example.todo.service.TaskService;
 import jakarta.servlet.http.HttpSession;
@@ -40,10 +40,7 @@ public class FavoritesController {
     @PostMapping("/{taskId}")
     public ResponseEntity<Void> addToFavorites(@PathVariable Long taskId,
                                                HttpSession session) {
-        Optional<Task> task = taskService.findById(taskId);
-        if (task.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        taskService.findById(taskId).orElseThrow(() -> new TaskNotFoundException(taskId));
         favoritesService.addToFavorites(taskId, session);
         return ResponseEntity.ok().build();
     }
