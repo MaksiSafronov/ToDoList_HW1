@@ -31,6 +31,8 @@ import java.util.List;
 @RequestMapping("/api/tasks")
 public class TaskController {
 
+    public static final String X_TOTAL_COUNT = "X-Total-Count";
+
     private final TaskService taskService;
     private final TaskMapper taskMapper;
 
@@ -41,10 +43,13 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskResponseDto>> getAll() {
-        List<TaskResponseDto> body = taskService.findAll().stream()
+        List<Task> tasks = taskService.findAll();
+        List<TaskResponseDto> body = tasks.stream()
                 .map(taskMapper::toResponseDto)
                 .toList();
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok()
+                .header(X_TOTAL_COUNT, String.valueOf(tasks.size()))
+                .body(body);
     }
 
     @GetMapping("/{id}")
