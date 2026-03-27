@@ -34,13 +34,13 @@ class AttachmentServiceTest {
     @Mock
     private TaskService taskService;
 
-    @TempDir
-    Path tempDir;
+    private Path tempDir;
 
     private AttachmentService attachmentService;
 
     @BeforeEach
-    void setUp() {
+    void setUp(@TempDir Path tempDir) {
+        this.tempDir = tempDir;
         attachmentService = new AttachmentService(taskAttachmentRepository, taskService, tempDir.toString());
     }
 

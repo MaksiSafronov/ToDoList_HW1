@@ -4,6 +4,7 @@ import com.example.todo.dto.TaskCreateDto;
 import com.example.todo.dto.TaskResponseDto;
 import com.example.todo.dto.TaskUpdateDto;
 import com.example.todo.mapper.TaskMapper;
+import com.example.todo.model.Priority;
 import com.example.todo.model.Task;
 import com.example.todo.service.TaskService;
 import org.junit.jupiter.api.Test;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -128,6 +130,8 @@ class TaskControllerTest {
         TaskCreateDto request = new TaskCreateDto();
         request.setTitle("new");
         request.setDescription("desc");
+        request.setDueDate(LocalDate.now().plusDays(1));
+        request.setPriority(Priority.MEDIUM);
 
         Task mappedRequest = new Task();
         mappedRequest.setTitle("new");
@@ -214,13 +218,14 @@ class TaskControllerTest {
     @Test
     void updateTask_negative_notFound() {
         TaskUpdateDto request = new TaskUpdateDto();
-        request.setTitle("x");
+        request.setTitle("Valid title here");
         request.setDescription("y");
         request.setCompleted(Boolean.FALSE);
 
         given(taskService.findById(404L)).willReturn(Optional.empty());
 
-        ResponseEntity<TaskResponseDto> response = restTemplate.exchange("/api/tasks/404", HttpMethod.PUT, new HttpEntity<>(request), TaskResponseDto.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/tasks/404", HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
