@@ -1,0 +1,68 @@
+package com.example.todo.controller;
+
+import com.example.todo.dto.ViewPreferenceResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Set;
+
+@RestController
+@RequestMapping("/api/preferences")
+public class PreferencesController {
+
+    public static final String VIEW_PREFERENCE_COOKIE = "viewPreference";
+    private static final String DEFAULT_VIEW = "detailed";
+    private static final Set<String> ALLOWED_MODES = Set.of("compact", "detailed");
+
+    @GetMapping("/view")
+    public ResponseEntity<ViewPreferenceResponse> getViewPreference(HttpServletRequest request) {
+        String value = readCookie(request, VIEW_PREFERENCE_COOKIE);
+        if (value == null || !ALLOWED_MODES.contains(value)) {
+            value = DEFAULT_VIEW;
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, buildViewCookie(value).toString())
+                    .body(new ViewPreferenceResponse(value));
+        }
+        return ResponseEntity.ok(new ViewPreferenceResponse(value));
+    }
+
+    @PostMapping("/view")
+    public ResponseEntity<ViewPreferenceResponse> setViewPreference(@RequestParam String mode) {
+        if (!ALLOWED_MODES.contains(mode)) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, buildViewCookie(mode).toString())
+                .body(new ViewPreferenceResponse(mode));
+    }
+
+    private static ResponseCookie buildViewCookie(String value) {
+        return ResponseCookie.from(VIEW_PREFERENCE_COOKIE, value)
+                .path("/")
+                .maxAge(Duration.ofDays(365))
+                .httpOnly(false)
+                .sameSite("Lax")
+                .build();
+    }
+
+    private static String readCookie(HttpServletRequest request, String name) {
+        if (request.getCookies() == null) {
+            return null;
+        }
+        return Arrays.stream(request.getCookies())
+                .filter(c -> name.equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
+}
