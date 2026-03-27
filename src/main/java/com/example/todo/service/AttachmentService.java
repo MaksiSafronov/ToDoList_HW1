@@ -15,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -78,6 +79,15 @@ public class AttachmentService {
     public TaskAttachment getAttachment(Long attachmentId) {
         return taskAttachmentRepository.findById(attachmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Attachment not found: " + attachmentId));
+    }
+
+    public List<TaskAttachment> getAttachmentsByTaskId(Long taskId) {
+        if (taskId == null) {
+            throw new IllegalArgumentException("Task id must not be null");
+        }
+        taskService.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found: " + taskId));
+        return taskAttachmentRepository.findByTaskId(taskId);
     }
 
     public Resource loadAsResource(Long attachmentId) {
