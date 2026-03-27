@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -42,8 +41,6 @@ class FavoritesControllerWebMvcTest {
     private TaskService taskService;
     @MockBean
     private TaskMapper taskMapper;
-    @MockBean
-    private Environment environment;
 
     @Test
     void addToFavorites_positive_returns200() throws Exception {

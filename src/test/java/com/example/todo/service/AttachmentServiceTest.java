@@ -84,7 +84,6 @@ class AttachmentServiceTest {
 
     @Test
     void storeAttachment_emptyFile_throws() {
-        when(taskService.findById(1L)).thenReturn(Optional.of(new Task()));
         MultipartFile empty = new MockMultipartFile("file", "a.txt", "text/plain", new byte[0]);
 
         assertThatThrownBy(() -> attachmentService.storeAttachment(1L, empty))

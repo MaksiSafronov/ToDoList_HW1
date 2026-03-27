@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
@@ -43,8 +42,6 @@ class AttachmentControllerWebMvcTest {
 
     @MockBean
     private AttachmentService attachmentService;
-    @MockBean
-    private Environment environment;
 
     @Test
     void uploadAttachment_positive_returns201() throws Exception {
