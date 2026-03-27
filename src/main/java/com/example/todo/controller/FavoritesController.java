@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Демонстрирует внедрение {@link HttpSession}: Spring создаёт/привязывает сессию к запросу,
+ * а {@link FavoritesService} хранит список избранных id в атрибутах этой сессии.
+ */
 @RestController
 @RequestMapping("/api/favorites")
 public class FavoritesController {
@@ -34,7 +38,8 @@ public class FavoritesController {
     }
 
     @PostMapping("/{taskId}")
-    public ResponseEntity<Void> addToFavorites(@PathVariable Long taskId, HttpSession session) {
+    public ResponseEntity<Void> addToFavorites(@PathVariable Long taskId,
+                                               HttpSession session) {
         Optional<Task> task = taskService.findById(taskId);
         if (task.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -44,7 +49,8 @@ public class FavoritesController {
     }
 
     @DeleteMapping("/{taskId}")
-    public ResponseEntity<Void> removeFromFavorites(@PathVariable Long taskId, HttpSession session) {
+    public ResponseEntity<Void> removeFromFavorites(@PathVariable Long taskId,
+                                                    HttpSession session) {
         favoritesService.removeFromFavorites(taskId, session);
         return ResponseEntity.noContent().build();
     }

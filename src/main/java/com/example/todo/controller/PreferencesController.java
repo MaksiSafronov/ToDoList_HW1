@@ -1,11 +1,10 @@
 package com.example.todo.controller;
 
 import com.example.todo.dto.ViewPreferenceResponse;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,9 +12,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Set;
 
+/**
+ * Демонстрирует {@link CookieValue} для чтения куки {@link #VIEW_PREFERENCE_COOKIE};
+ * установка куки выполняется через заголовок {@code Set-Cookie} в ответе.
+ */
 @RestController
 @RequestMapping("/api/preferences")
 public class PreferencesController {
@@ -24,9 +26,14 @@ public class PreferencesController {
     private static final String DEFAULT_VIEW = "detailed";
     private static final Set<String> ALLOWED_MODES = Set.of("compact", "detailed");
 
+    /**
+     * Читает куку через {@link CookieValue @CookieValue} ({@code required = false}, если куки ещё нет).
+     * При отсутствии или неверном значении подставляется режим по умолчанию и отдаётся {@code Set-Cookie}.
+     */
     @GetMapping("/view")
-    public ResponseEntity<ViewPreferenceResponse> getViewPreference(HttpServletRequest request) {
-        String value = readCookie(request, VIEW_PREFERENCE_COOKIE);
+    public ResponseEntity<ViewPreferenceResponse> getViewPreference(
+            @CookieValue(name = VIEW_PREFERENCE_COOKIE, required = false) String viewPreference) {
+        String value = viewPreference;
         if (value == null || !ALLOWED_MODES.contains(value)) {
             value = DEFAULT_VIEW;
             return ResponseEntity.ok()
@@ -53,16 +60,5 @@ public class PreferencesController {
                 .httpOnly(false)
                 .sameSite("Lax")
                 .build();
-    }
-
-    private static String readCookie(HttpServletRequest request, String name) {
-        if (request.getCookies() == null) {
-            return null;
-        }
-        return Arrays.stream(request.getCookies())
-                .filter(c -> name.equals(c.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
     }
 }
