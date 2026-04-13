@@ -9,7 +9,8 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
 /**
- * {@link BeanPostProcessor}, логирующий этапы инициализации бинов {@link TaskService} и {@link TaskRepository}.
+ * {@link BeanPostProcessor}, логирующий этапы инициализации бинов {@link TaskService}
+ * и прокси {@link TaskRepository} (Spring Data JPA).
  */
 @Component
 public class TaskLifecycleProcessor implements BeanPostProcessor {

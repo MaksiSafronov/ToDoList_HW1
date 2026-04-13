@@ -4,6 +4,7 @@ import com.example.todo.exception.TaskNotFoundException;
 import com.example.todo.model.Task;
 import com.example.todo.model.TaskAttachment;
 import com.example.todo.repository.TaskAttachmentRepository;
+import com.example.todo.repository.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,113 +30,114 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AttachmentServiceTest {
 
-    @Mock
-    private TaskAttachmentRepository taskAttachmentRepository;
-    @Mock
-    private TaskService taskService;
+	@Mock
+	private TaskAttachmentRepository taskAttachmentRepository;
+	@Mock
+	private TaskRepository taskRepository;
 
-    private Path tempDir;
+	private Path tempDir;
 
-    private AttachmentService attachmentService;
+	private AttachmentService attachmentService;
 
-    @BeforeEach
-    void setUp(@TempDir Path tempDir) {
-        this.tempDir = tempDir;
-        attachmentService = new AttachmentService(taskAttachmentRepository, taskService, tempDir.toString());
-    }
+	@BeforeEach
+	void setUp(@TempDir Path tempDir) {
+		this.tempDir = tempDir;
+		attachmentService = new AttachmentService(taskAttachmentRepository, taskRepository, tempDir.toString());
+	}
 
-    @Test
-    void storeAttachment_savesFileAndMetadata() throws Exception {
-        when(taskService.findById(1L)).thenReturn(Optional.of(new Task()));
-        TaskAttachment saved = new TaskAttachment();
-        saved.setId(99L);
-        when(taskAttachmentRepository.create(any(TaskAttachment.class))).thenAnswer(inv -> {
-            TaskAttachment a = inv.getArgument(0);
-            a.setId(99L);
-            return a;
-        });
+	@Test
+	void storeAttachment_savesFileAndMetadata() throws Exception {
+		Task taskRef = new Task();
+		taskRef.setId(1L);
+		when(taskRepository.existsById(1L)).thenReturn(true);
+		when(taskRepository.getReferenceById(1L)).thenReturn(taskRef);
+		when(taskAttachmentRepository.save(any(TaskAttachment.class))).thenAnswer(inv -> {
+			TaskAttachment a = inv.getArgument(0);
+			a.setId(99L);
+			return a;
+		});
 
-        MultipartFile file = new MockMultipartFile("file", "doc.txt", "text/plain", "hello".getBytes());
+		MultipartFile file = new MockMultipartFile("file", "doc.txt", "text/plain", "hello".getBytes());
 
-        TaskAttachment result = attachmentService.storeAttachment(1L, file);
+		TaskAttachment result = attachmentService.storeAttachment(1L, file);
 
-        assertThat(result.getId()).isEqualTo(99L);
-        assertThat(result.getTaskId()).isEqualTo(1L);
-        assertThat(result.getFileName()).isEqualTo("doc.txt");
-        assertThat(result.getContentType()).isEqualTo("text/plain");
-        assertThat(result.getSize()).isEqualTo(5L);
-        assertThat(result.getStoredFileName()).isNotBlank();
+		assertThat(result.getId()).isEqualTo(99L);
+		assertThat(result.getTaskId()).isEqualTo(1L);
+		assertThat(result.getFileName()).isEqualTo("doc.txt");
+		assertThat(result.getContentType()).isEqualTo("text/plain");
+		assertThat(result.getSize()).isEqualTo(5L);
+		assertThat(result.getStoredFileName()).isNotBlank();
 
-        ArgumentCaptor<TaskAttachment> captor = ArgumentCaptor.forClass(TaskAttachment.class);
-        verify(taskAttachmentRepository).create(captor.capture());
-        Path storedOnDisk = tempDir.resolve(captor.getValue().getStoredFileName());
-        assertThat(Files.readString(storedOnDisk)).isEqualTo("hello");
-    }
+		ArgumentCaptor<TaskAttachment> captor = ArgumentCaptor.forClass(TaskAttachment.class);
+		verify(taskAttachmentRepository).save(captor.capture());
+		Path storedOnDisk = tempDir.resolve(captor.getValue().getStoredFileName());
+		assertThat(Files.readString(storedOnDisk)).isEqualTo("hello");
+	}
 
-    @Test
-    void storeAttachment_taskNotFound_throws() {
-        when(taskService.findById(2L)).thenReturn(Optional.empty());
+	@Test
+	void storeAttachment_taskNotFound_throws() {
+		when(taskRepository.existsById(2L)).thenReturn(false);
 
-        MultipartFile file = new MockMultipartFile("file", "a.txt", "text/plain", "x".getBytes());
+		MultipartFile file = new MockMultipartFile("file", "a.txt", "text/plain", "x".getBytes());
 
-        assertThatThrownBy(() -> attachmentService.storeAttachment(2L, file))
-                .isInstanceOf(TaskNotFoundException.class);
-    }
+		assertThatThrownBy(() -> attachmentService.storeAttachment(2L, file))
+				.isInstanceOf(TaskNotFoundException.class);
+	}
 
-    @Test
-    void storeAttachment_emptyFile_throws() {
-        MultipartFile empty = new MockMultipartFile("file", "a.txt", "text/plain", new byte[0]);
+	@Test
+	void storeAttachment_emptyFile_throws() {
+		MultipartFile empty = new MockMultipartFile("file", "a.txt", "text/plain", new byte[0]);
 
-        assertThatThrownBy(() -> attachmentService.storeAttachment(1L, empty))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("empty");
-    }
+		assertThatThrownBy(() -> attachmentService.storeAttachment(1L, empty))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessageContaining("empty");
+	}
 
-    @Test
-    void getAttachmentsByTaskId_delegatesToRepository() {
-        when(taskService.findById(3L)).thenReturn(Optional.of(new Task()));
-        TaskAttachment a = new TaskAttachment();
-        a.setId(1L);
-        when(taskAttachmentRepository.findByTaskId(3L)).thenReturn(List.of(a));
+	@Test
+	void getAttachmentsByTaskId_delegatesToRepository() {
+		when(taskRepository.existsById(3L)).thenReturn(true);
+		TaskAttachment a = new TaskAttachment();
+		a.setId(1L);
+		when(taskAttachmentRepository.findByTask_Id(3L)).thenReturn(List.of(a));
 
-        List<TaskAttachment> list = attachmentService.getAttachmentsByTaskId(3L);
+		List<TaskAttachment> list = attachmentService.getAttachmentsByTaskId(3L);
 
-        assertThat(list).hasSize(1);
-    }
+		assertThat(list).hasSize(1);
+	}
 
-    @Test
-    void getAttachmentsByTaskId_taskMissing_throws() {
-        when(taskService.findById(3L)).thenReturn(Optional.empty());
+	@Test
+	void getAttachmentsByTaskId_taskMissing_throws() {
+		when(taskRepository.existsById(3L)).thenReturn(false);
 
-        assertThatThrownBy(() -> attachmentService.getAttachmentsByTaskId(3L))
-                .isInstanceOf(TaskNotFoundException.class);
-    }
+		assertThatThrownBy(() -> attachmentService.getAttachmentsByTaskId(3L))
+				.isInstanceOf(TaskNotFoundException.class);
+	}
 
-    @Test
-    void loadAsResource_returnsReadableResource() throws Exception {
-        TaskAttachment meta = new TaskAttachment();
-        meta.setStoredFileName("stored.bin");
-        meta.setFileName("orig.bin");
-        meta.setContentType("application/octet-stream");
-        meta.setSize(3);
-        when(taskAttachmentRepository.findById(10L)).thenReturn(Optional.of(meta));
-        Files.writeString(tempDir.resolve("stored.bin"), "abc");
+	@Test
+	void loadAsResource_returnsReadableResource() throws Exception {
+		TaskAttachment meta = new TaskAttachment();
+		meta.setStoredFileName("stored.bin");
+		meta.setFileName("orig.bin");
+		meta.setContentType("application/octet-stream");
+		meta.setSize(3);
+		when(taskAttachmentRepository.findById(10L)).thenReturn(Optional.of(meta));
+		Files.writeString(tempDir.resolve("stored.bin"), "abc");
 
-        Resource resource = attachmentService.loadAsResource(10L);
+		Resource resource = attachmentService.loadAsResource(10L);
 
-        assertThat(resource.getInputStream().readAllBytes()).isEqualTo("abc".getBytes());
-    }
+		assertThat(resource.getInputStream().readAllBytes()).isEqualTo("abc".getBytes());
+	}
 
-    @Test
-    void deleteAttachment_removesFileAndRecord() throws Exception {
-        TaskAttachment meta = new TaskAttachment();
-        meta.setStoredFileName("to-delete.txt");
-        when(taskAttachmentRepository.findById(5L)).thenReturn(Optional.of(meta));
-        Files.writeString(tempDir.resolve("to-delete.txt"), "data");
+	@Test
+	void deleteAttachment_removesFileAndRecord() throws Exception {
+		TaskAttachment meta = new TaskAttachment();
+		meta.setStoredFileName("to-delete.txt");
+		when(taskAttachmentRepository.findById(5L)).thenReturn(Optional.of(meta));
+		Files.writeString(tempDir.resolve("to-delete.txt"), "data");
 
-        attachmentService.deleteAttachment(5L);
+		attachmentService.deleteAttachment(5L);
 
-        verify(taskAttachmentRepository).deleteById(5L);
-        assertThat(Files.exists(tempDir.resolve("to-delete.txt"))).isFalse();
-    }
+		verify(taskAttachmentRepository).deleteById(5L);
+		assertThat(Files.exists(tempDir.resolve("to-delete.txt"))).isFalse();
+	}
 }

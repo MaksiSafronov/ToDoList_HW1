@@ -131,6 +131,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    @ExceptionHandler(UnknownTaskIdsException.class)
+    public ResponseEntity<ErrorResponse> handleUnknownTaskIds(UnknownTaskIdsException ex, HttpServletRequest request) {
+        Map<String, Object> details = Map.of("unknownTaskIds", ex.getUnknownTaskIds());
+        ErrorResponse body = buildError(
+                request,
+                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.NOT_FOUND.getReasonPhrase(),
+                ex.getMessage(),
+                details
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAny(Exception ex, HttpServletRequest request) {
         log.error("Unhandled exception", ex);
