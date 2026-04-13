@@ -4,6 +4,7 @@ import com.example.todo.model.Task;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,13 @@ public class InMemoryTaskRepository implements TaskRepository {
         if (task.getId() == null) {
             task.setId(idSequence.incrementAndGet());
         }
+        LocalDateTime now = LocalDateTime.now();
+        if (task.getCreatedAt() == null) {
+            task.setCreatedAt(now);
+        }
+        if (task.getLastModifiedAt() == null) {
+            task.setLastModifiedAt(now);
+        }
         tasks.put(task.getId(), task);
         return task;
     }
@@ -46,6 +54,7 @@ public class InMemoryTaskRepository implements TaskRepository {
         if (task.getId() == null) {
             throw new IllegalArgumentException("Task id must not be null for update");
         }
+        task.setLastModifiedAt(LocalDateTime.now());
         tasks.put(task.getId(), task);
         return task;
     }
