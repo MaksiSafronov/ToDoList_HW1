@@ -9,6 +9,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
+import org.mapstruct.ReportingPolicy;
 
 @Mapper(componentModel = "spring")
 public interface TaskMapper {
@@ -16,14 +17,17 @@ public interface TaskMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "lastModifiedAt", ignore = true)
+    @Mapping(target = "attachments", ignore = true)
     @Mapping(target = "completed", constant = "false")
     Task toEntity(TaskCreateDto dto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "lastModifiedAt", ignore = true)
+    @Mapping(target = "attachments", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     Task updateEntity(TaskUpdateDto dto, @MappingTarget Task task);
 
+    @BeanMapping(unmappedSourcePolicy = ReportingPolicy.IGNORE)
     TaskResponseDto toResponseDto(Task task);
 }
