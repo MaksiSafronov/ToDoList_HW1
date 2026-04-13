@@ -76,7 +76,7 @@ public class AttachmentService {
         attachment.setContentType(file.getContentType());
         attachment.setSize(file.getSize());
         attachment.setUploadedAt(LocalDateTime.now());
-        return taskAttachmentRepository.create(attachment);
+        return taskAttachmentRepository.save(attachment);
     }
 
     public TaskAttachment getAttachment(Long attachmentId) {
@@ -90,7 +90,7 @@ public class AttachmentService {
         }
         taskService.findById(taskId)
                 .orElseThrow(() -> new TaskNotFoundException(taskId));
-        return taskAttachmentRepository.findByTaskId(taskId);
+        return taskAttachmentRepository.findByTask_Id(taskId);
     }
 
     public Resource loadAsResource(Long attachmentId) {

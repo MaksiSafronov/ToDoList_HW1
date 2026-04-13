@@ -51,7 +51,7 @@ class AttachmentServiceTest {
         when(taskService.findById(1L)).thenReturn(Optional.of(task));
         TaskAttachment saved = new TaskAttachment();
         saved.setId(99L);
-        when(taskAttachmentRepository.create(any(TaskAttachment.class))).thenAnswer(inv -> {
+        when(taskAttachmentRepository.save(any(TaskAttachment.class))).thenAnswer(inv -> {
             TaskAttachment a = inv.getArgument(0);
             a.setId(99L);
             return a;
@@ -69,7 +69,7 @@ class AttachmentServiceTest {
         assertThat(result.getStoredFileName()).isNotBlank();
 
         ArgumentCaptor<TaskAttachment> captor = ArgumentCaptor.forClass(TaskAttachment.class);
-        verify(taskAttachmentRepository).create(captor.capture());
+        verify(taskAttachmentRepository).save(captor.capture());
         Path storedOnDisk = tempDir.resolve(captor.getValue().getStoredFileName());
         assertThat(Files.readString(storedOnDisk)).isEqualTo("hello");
     }
@@ -100,7 +100,7 @@ class AttachmentServiceTest {
         when(taskService.findById(3L)).thenReturn(Optional.of(task));
         TaskAttachment a = new TaskAttachment();
         a.setId(1L);
-        when(taskAttachmentRepository.findByTaskId(3L)).thenReturn(List.of(a));
+        when(taskAttachmentRepository.findByTask_Id(3L)).thenReturn(List.of(a));
 
         List<TaskAttachment> list = attachmentService.getAttachmentsByTaskId(3L);
 

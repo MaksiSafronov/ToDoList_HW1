@@ -1,24 +1,13 @@
 package com.example.todo.repository;
 
 import com.example.todo.model.TaskAttachment;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 
-/**
- * Контракт репозитория метаданных вложений задач.
- */
-public interface TaskAttachmentRepository {
+public interface TaskAttachmentRepository extends JpaRepository<TaskAttachment, Long> {
 
-    TaskAttachment create(TaskAttachment attachment);
+	List<TaskAttachment> findByTask_Id(Long taskId);
 
-    Optional<TaskAttachment> findById(Long id);
-
-    List<TaskAttachment> findByTaskId(Long taskId);
-
-    List<TaskAttachment> findAll();
-
-    void deleteById(Long id);
-
-    void deleteByTaskId(Long taskId);
+	void deleteByTask_Id(Long taskId);
 }

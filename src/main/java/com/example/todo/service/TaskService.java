@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Сервисный слой для CRUD-операций над задачами.
- * Использует {@link com.example.todo.repository.TaskRepository} как источник данных и поддерживает простой кэш в памяти.
+ * Использует {@link com.example.todo.repository.TaskRepository} (Spring Data JPA) и простой кэш в памяти.
  */
 @Service
 public class TaskService {
@@ -54,7 +54,7 @@ public class TaskService {
     }
 
     public Task create(Task task) {
-        Task created = taskRepository.create(task);
+        Task created = taskRepository.save(task);
         if (created.getId() != null) {
             taskCache.put(created.getId().toString(), created);
         }
@@ -79,7 +79,7 @@ public class TaskService {
     }
 
     public Task update(Task task) {
-        Task updated = taskRepository.update(task);
+        Task updated = taskRepository.save(task);
         if (updated.getId() != null) {
             taskCache.put(updated.getId().toString(), updated);
         }
