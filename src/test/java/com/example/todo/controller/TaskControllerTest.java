@@ -1,5 +1,10 @@
 package com.example.todo.controller;
 
+import com.example.todo.dto.TaskCreateDto;
+import com.example.todo.dto.TaskResponseDto;
+import com.example.todo.dto.TaskUpdateDto;
+import com.example.todo.mapper.TaskMapper;
+import com.example.todo.model.Priority;
 import com.example.todo.model.Task;
 import com.example.todo.service.TaskService;
 import org.junit.jupiter.api.Test;
@@ -15,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +40,8 @@ class TaskControllerTest {
 
     @MockBean
     private TaskService taskService;
+    @MockBean
+    private TaskMapper taskMapper;
 
     @Test
     void getAllTasks_positive() {
@@ -49,9 +57,23 @@ class TaskControllerTest {
         t2.setDescription("d2");
         t2.setCompleted(true);
 
-        given(taskService.findAll()).willReturn(List.of(t1, t2));
+        TaskResponseDto r1 = new TaskResponseDto();
+        r1.setId(1L);
+        r1.setTitle("t1");
+        r1.setDescription("d1");
+        r1.setCompleted(false);
 
-        ResponseEntity<Task[]> response = restTemplate.getForEntity("/api/tasks", Task[].class);
+        TaskResponseDto r2 = new TaskResponseDto();
+        r2.setId(2L);
+        r2.setTitle("t2");
+        r2.setDescription("d2");
+        r2.setCompleted(true);
+
+        given(taskService.findAll()).willReturn(List.of(t1, t2));
+        given(taskMapper.toResponseDto(t1)).willReturn(r1);
+        given(taskMapper.toResponseDto(t2)).willReturn(r2);
+
+        ResponseEntity<TaskResponseDto[]> response = restTemplate.getForEntity("/api/tasks", TaskResponseDto[].class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -77,9 +99,16 @@ class TaskControllerTest {
         t1.setDescription("desc");
         t1.setCompleted(false);
 
-        given(taskService.findById(10L)).willReturn(Optional.of(t1));
+        TaskResponseDto responseDto = new TaskResponseDto();
+        responseDto.setId(10L);
+        responseDto.setTitle("title");
+        responseDto.setDescription("desc");
+        responseDto.setCompleted(false);
 
-        ResponseEntity<Task> response = restTemplate.getForEntity("/api/tasks/10", Task.class);
+        given(taskService.findById(10L)).willReturn(Optional.of(t1));
+        given(taskMapper.toResponseDto(t1)).willReturn(responseDto);
+
+        ResponseEntity<TaskResponseDto> response = restTemplate.getForEntity("/api/tasks/10", TaskResponseDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -91,17 +120,23 @@ class TaskControllerTest {
     void getTaskById_negative_notFound() {
         given(taskService.findById(999L)).willReturn(Optional.empty());
 
-        ResponseEntity<Task> response = restTemplate.getForEntity("/api/tasks/999", Task.class);
+        ResponseEntity<TaskResponseDto> response = restTemplate.getForEntity("/api/tasks/999", TaskResponseDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     void createTask_positive() {
-        Task request = new Task();
+        TaskCreateDto request = new TaskCreateDto();
         request.setTitle("new");
         request.setDescription("desc");
-        request.setCompleted(false);
+        request.setDueDate(LocalDate.now().plusDays(1));
+        request.setPriority(Priority.MEDIUM);
+
+        Task mappedRequest = new Task();
+        mappedRequest.setTitle("new");
+        mappedRequest.setDescription("desc");
+        mappedRequest.setCompleted(false);
 
         Task created = new Task();
         created.setId(5L);
@@ -109,9 +144,17 @@ class TaskControllerTest {
         created.setDescription("desc");
         created.setCompleted(false);
 
-        given(taskService.create(any(Task.class))).willReturn(created);
+        TaskResponseDto responseDto = new TaskResponseDto();
+        responseDto.setId(5L);
+        responseDto.setTitle("new");
+        responseDto.setDescription("desc");
+        responseDto.setCompleted(false);
 
-        ResponseEntity<Task> response = restTemplate.postForEntity("/api/tasks", request, Task.class);
+        given(taskMapper.toEntity(any(TaskCreateDto.class))).willReturn(mappedRequest);
+        given(taskService.create(any(Task.class))).willReturn(created);
+        given(taskMapper.toResponseDto(created)).willReturn(responseDto);
+
+        ResponseEntity<TaskResponseDto> response = restTemplate.postForEntity("/api/tasks", request, TaskResponseDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isNotNull();
@@ -138,10 +181,10 @@ class TaskControllerTest {
         existing.setDescription("old");
         existing.setCompleted(false);
 
-        Task request = new Task();
+        TaskUpdateDto request = new TaskUpdateDto();
         request.setTitle("new");
         request.setDescription("new");
-        request.setCompleted(true);
+        request.setCompleted(Boolean.TRUE);
 
         Task updated = new Task();
         updated.setId(7L);
@@ -149,10 +192,18 @@ class TaskControllerTest {
         updated.setDescription("new");
         updated.setCompleted(true);
 
+        TaskResponseDto responseDto = new TaskResponseDto();
+        responseDto.setId(7L);
+        responseDto.setTitle("new");
+        responseDto.setDescription("new");
+        responseDto.setCompleted(true);
+
         given(taskService.findById(7L)).willReturn(Optional.of(existing));
         given(taskService.update(any(Task.class))).willReturn(updated);
+        given(taskMapper.updateEntity(any(TaskUpdateDto.class), any(Task.class))).willReturn(existing);
+        given(taskMapper.toResponseDto(updated)).willReturn(responseDto);
 
-        ResponseEntity<Task> response = restTemplate.exchange("/api/tasks/7", HttpMethod.PUT, new HttpEntity<>(request), Task.class);
+        ResponseEntity<TaskResponseDto> response = restTemplate.exchange("/api/tasks/7", HttpMethod.PUT, new HttpEntity<>(request), TaskResponseDto.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -166,14 +217,15 @@ class TaskControllerTest {
 
     @Test
     void updateTask_negative_notFound() {
-        Task request = new Task();
-        request.setTitle("x");
+        TaskUpdateDto request = new TaskUpdateDto();
+        request.setTitle("Valid title here");
         request.setDescription("y");
-        request.setCompleted(false);
+        request.setCompleted(Boolean.FALSE);
 
         given(taskService.findById(404L)).willReturn(Optional.empty());
 
-        ResponseEntity<Task> response = restTemplate.exchange("/api/tasks/404", HttpMethod.PUT, new HttpEntity<>(request), Task.class);
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/api/tasks/404", HttpMethod.PUT, new HttpEntity<>(request), String.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }

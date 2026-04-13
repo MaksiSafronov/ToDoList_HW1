@@ -1,19 +1,37 @@
-package com.example.todo.model;
+package com.example.todo.dto;
+
+import com.example.todo.model.Priority;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.Set;
 
-public class Task {
+@Schema(name = "TaskResponseDto", description = "Задача в ответе API")
+public class TaskResponseDto {
 
+    @Schema(description = "Идентификатор", example = "1")
     private Long id;
+
+    @Schema(description = "Заголовок", example = "Купить молоко")
     private String title;
+
+    @Schema(description = "Описание")
     private String description;
+
+    @Schema(description = "Выполнена ли задача")
     private boolean completed;
+
+    @Schema(description = "Дата и время создания")
     private LocalDateTime createdAt;
+
+    @Schema(description = "Срок выполнения")
     private LocalDate dueDate;
+
+    @Schema(description = "Приоритет")
     private Priority priority;
+
+    @Schema(description = "Теги")
     private Set<String> tags;
 
     public Long getId() {
@@ -79,36 +97,4 @@ public class Task {
     public void setTags(Set<String> tags) {
         this.tags = tags;
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Task task = (Task) o;
-        return Objects.equals(id, task.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Task{" +
-                "id=" + id +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", completed=" + completed +
-                ", createdAt=" + createdAt +
-                ", dueDate=" + dueDate +
-                ", priority=" + priority +
-                ", tags=" + tags +
-                '}';
-    }
 }
-
