@@ -3,8 +3,12 @@ package com.example.todo.mapper;
 import com.example.todo.dto.TaskCreateDto;
 import com.example.todo.dto.TaskResponseDto;
 import com.example.todo.dto.TaskUpdateDto;
+import com.example.todo.dto.TaskWithAttachmentsResponseDto;
+import com.example.todo.dto.AttachmentResponseDto;
 import com.example.todo.model.Task;
+import com.example.todo.model.TaskAttachment;
 import org.mapstruct.BeanMapping;
+import org.mapstruct.InheritConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -30,4 +34,11 @@ public interface TaskMapper {
 
     @BeanMapping(unmappedSourcePolicy = ReportingPolicy.IGNORE)
     TaskResponseDto toResponseDto(Task task);
+
+    @InheritConfiguration(name = "toResponseDto")
+    @Mapping(target = "attachments", source = "attachments")
+    TaskWithAttachmentsResponseDto toResponseWithAttachments(Task task);
+
+    @BeanMapping(unmappedSourcePolicy = ReportingPolicy.IGNORE)
+    AttachmentResponseDto toAttachmentResponseDto(TaskAttachment attachment);
 }

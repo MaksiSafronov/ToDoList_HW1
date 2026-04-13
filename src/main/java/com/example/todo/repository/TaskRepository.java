@@ -11,6 +11,17 @@ import java.util.List;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
+	/**
+	 * Все задачи с коллекцией {@code attachments} одним запросом ({@code JOIN FETCH}),
+	 * без N+1 при обращении к вложениям.
+	 */
+	@Query("""
+			SELECT DISTINCT t FROM Task t
+			LEFT JOIN FETCH t.attachments
+			ORDER BY t.id
+			""")
+	List<Task> findAllWithAttachments();
+
 	List<Task> findByCompletedAndPriority(boolean completed, Priority priority);
 
 	List<Task> findByCompleted(boolean completed);

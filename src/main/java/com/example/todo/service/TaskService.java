@@ -68,6 +68,13 @@ public class TaskService {
 		return taskRepository.findAll();
 	}
 
+	/**
+	 * Список задач с загруженными вложениями; выборка из БД без N+1 для коллекции вложений.
+	 */
+	public List<Task> findAllWithAttachments() {
+		return taskRepository.findAllWithAttachments();
+	}
+
 	@Transactional
 	public Task update(Task task) {
 		return taskRepository.save(task);
