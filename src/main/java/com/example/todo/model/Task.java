@@ -1,15 +1,18 @@
 package com.example.todo.model;
 
 import com.example.todo.persistence.StringSetJsonConverter;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -17,6 +20,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -56,6 +61,9 @@ public class Task {
 	@Convert(converter = StringSetJsonConverter.class)
 	@Column(columnDefinition = "TEXT")
 	private Set<String> tags;
+
+	@OneToMany(mappedBy = "task", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+	private List<TaskAttachment> attachments = new ArrayList<>();
 
 	public Task() {
 	}
@@ -130,6 +138,14 @@ public class Task {
 
 	public void setTags(Set<String> tags) {
 		this.tags = tags;
+	}
+
+	public List<TaskAttachment> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(List<TaskAttachment> attachments) {
+		this.attachments = attachments;
 	}
 
 	@Override

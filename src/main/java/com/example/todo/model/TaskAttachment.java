@@ -1,101 +1,149 @@
 package com.example.todo.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Entity
+@Table(name = "task_attachments")
 public class TaskAttachment {
 
-    private Long id;
-    private Long taskId;
-    private String fileName;
-    private String storedFileName;
-    private String contentType;
-    private long size;
-    private LocalDateTime uploadedAt;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    public Long getId() {
-        return id;
-    }
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "task_id", nullable = false)
+	private Task task;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+	@Column(name = "file_name", nullable = false)
+	private String fileName;
 
-    public Long getTaskId() {
-        return taskId;
-    }
+	@Column(name = "stored_file_name", nullable = false)
+	private String storedFileName;
 
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
-    }
+	@Column(name = "content_type")
+	private String contentType;
 
-    public String getFileName() {
-        return fileName;
-    }
+	@Column(nullable = false)
+	private long size;
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+	@Column(name = "uploaded_at", nullable = false)
+	private LocalDateTime uploadedAt;
 
-    public String getStoredFileName() {
-        return storedFileName;
-    }
+	public TaskAttachment() {
+	}
 
-    public void setStoredFileName(String storedFileName) {
-        this.storedFileName = storedFileName;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getContentType() {
-        return contentType;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
+	public Task getTask() {
+		return task;
+	}
 
-    public long getSize() {
-        return size;
-    }
+	public void setTask(Task task) {
+		this.task = task;
+	}
 
-    public void setSize(long size) {
-        this.size = size;
-    }
+	/**
+	 * Удобство для кода без загрузки полной сущности {@link Task} (тесты, in-memory слой).
+	 * Для сохранения через JPA предпочтительно {@link #setTask(Task)} с управляемой сущностью.
+	 */
+	public Long getTaskId() {
+		return task == null ? null : task.getId();
+	}
 
-    public LocalDateTime getUploadedAt() {
-        return uploadedAt;
-    }
+	public void setTaskId(Long taskId) {
+		if (taskId == null) {
+			this.task = null;
+			return;
+		}
+		Task ref = new Task();
+		ref.setId(taskId);
+		this.task = ref;
+	}
 
-    public void setUploadedAt(LocalDateTime uploadedAt) {
-        this.uploadedAt = uploadedAt;
-    }
+	public String getFileName() {
+		return fileName;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        TaskAttachment that = (TaskAttachment) o;
-        return Objects.equals(id, that.id);
-    }
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
+	public String getStoredFileName() {
+		return storedFileName;
+	}
 
-    @Override
-    public String toString() {
-        return "TaskAttachment{" +
-                "id=" + id +
-                ", taskId=" + taskId +
-                ", fileName='" + fileName + '\'' +
-                ", storedFileName='" + storedFileName + '\'' +
-                ", contentType='" + contentType + '\'' +
-                ", size=" + size +
-                ", uploadedAt=" + uploadedAt +
-                '}';
-    }
+	public void setStoredFileName(String storedFileName) {
+		this.storedFileName = storedFileName;
+	}
+
+	public String getContentType() {
+		return contentType;
+	}
+
+	public void setContentType(String contentType) {
+		this.contentType = contentType;
+	}
+
+	public long getSize() {
+		return size;
+	}
+
+	public void setSize(long size) {
+		this.size = size;
+	}
+
+	public LocalDateTime getUploadedAt() {
+		return uploadedAt;
+	}
+
+	public void setUploadedAt(LocalDateTime uploadedAt) {
+		this.uploadedAt = uploadedAt;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		TaskAttachment that = (TaskAttachment) o;
+		return Objects.equals(id, that.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public String toString() {
+		return "TaskAttachment{" +
+				"id=" + id +
+				", taskId=" + getTaskId() +
+				", fileName='" + fileName + '\'' +
+				", storedFileName='" + storedFileName + '\'' +
+				", contentType='" + contentType + '\'' +
+				", size=" + size +
+				", uploadedAt=" + uploadedAt +
+				'}';
+	}
 }

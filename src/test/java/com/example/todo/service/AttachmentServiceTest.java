@@ -46,7 +46,9 @@ class AttachmentServiceTest {
 
     @Test
     void storeAttachment_savesFileAndMetadata() throws Exception {
-        when(taskService.findById(1L)).thenReturn(Optional.of(new Task()));
+        Task task = new Task();
+        task.setId(1L);
+        when(taskService.findById(1L)).thenReturn(Optional.of(task));
         TaskAttachment saved = new TaskAttachment();
         saved.setId(99L);
         when(taskAttachmentRepository.create(any(TaskAttachment.class))).thenAnswer(inv -> {
@@ -93,7 +95,9 @@ class AttachmentServiceTest {
 
     @Test
     void getAttachmentsByTaskId_delegatesToRepository() {
-        when(taskService.findById(3L)).thenReturn(Optional.of(new Task()));
+        Task task = new Task();
+        task.setId(3L);
+        when(taskService.findById(3L)).thenReturn(Optional.of(task));
         TaskAttachment a = new TaskAttachment();
         a.setId(1L);
         when(taskAttachmentRepository.findByTaskId(3L)).thenReturn(List.of(a));
