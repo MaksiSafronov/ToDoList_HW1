@@ -6,6 +6,45 @@ app:
   version: 1.0.0
   api:
     version: 2.0.0
+  security:
+    # Override via APP_SECURITY_PASSWORD_PEPPER in real deployments.
+    password-pepper: ${APP_SECURITY_PASSWORD_PEPPER:dev-pepper-change-me}
+  jwt:
+    # Override via JWT_SECRET (min 256 bits for HS256). Dev default is non-production only.
+    secret: ${JWT_SECRET:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+    access-token-validity-ms: ${JWT_ACCESS_TOKEN_VALIDITY_MS:3600000}
+  external-tasks:
+    base-url: ${EXTERNAL_TASKS_BASE_URL:http://127.0.0.1:${server.port}/external/v1}
+    connect-timeout-ms: ${EXTERNAL_TASKS_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${EXTERNAL_TASKS_READ_TIMEOUT_MS:5000}
+    user-agent: ${EXTERNAL_TASKS_USER_AGENT:TodoGateway/1.0}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0
 
 springdoc:
   api-docs:
