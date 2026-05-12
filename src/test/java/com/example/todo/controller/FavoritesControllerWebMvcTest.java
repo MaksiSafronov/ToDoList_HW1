@@ -8,6 +8,7 @@ import com.example.todo.service.FavoritesService;
 import com.example.todo.service.TaskService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = FavoritesController.class)
+@WebMvcTest(controllers = FavoritesController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @Import(GlobalExceptionHandler.class)
 class FavoritesControllerWebMvcTest {
 

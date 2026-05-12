@@ -9,6 +9,11 @@ public class TaskNotFoundException extends RuntimeException {
         this.taskId = taskId;
     }
 
+    public TaskNotFoundException(Long taskId, String message) {
+        super(message != null && !message.isBlank() ? message : "Task not found: " + taskId);
+        this.taskId = taskId;
+    }
+
     public Long getTaskId() {
         return taskId;
     }

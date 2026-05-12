@@ -3,6 +3,7 @@ package com.example.todo.controller;
 import com.example.todo.exception.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
@@ -17,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = PreferencesController.class)
+@WebMvcTest(controllers = PreferencesController.class, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @Import(GlobalExceptionHandler.class)
 class PreferencesControllerWebMvcTest {
 
