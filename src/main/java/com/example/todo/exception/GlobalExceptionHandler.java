@@ -7,6 +7,7 @@ import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -116,6 +117,37 @@ public class GlobalExceptionHandler {
                 null
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentials(
+            BadCredentialsException ex, HttpServletRequest request) {
+        ErrorResponse body = buildError(
+                request,
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                "Invalid username or password",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
+    @ExceptionHandler(ExternalApiException.class)
+    public ResponseEntity<ErrorResponse> handleExternalApi(ExternalApiException ex, HttpServletRequest request) {
+        int status = ex.getStatus().value();
+        HttpStatus resolved = HttpStatus.resolve(status);
+        if (resolved == null || !resolved.isError()) {
+            status = HttpStatus.BAD_GATEWAY.value();
+            resolved = HttpStatus.BAD_GATEWAY;
+        }
+        ErrorResponse body = buildError(
+                request,
+                status,
+                resolved.getReasonPhrase(),
+                ex.getMessage(),
+                null
+        );
+        return ResponseEntity.status(status).body(body);
     }
 
     @ExceptionHandler(TaskNotFoundException.class)
