@@ -25,6 +25,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ExternalTasksClient {
@@ -178,9 +179,16 @@ public class ExternalTasksClient {
     }
 
     private void logNonJsonBodyIfNeeded(String operation, RestClientResponseException ex, String body) {
-        MediaType ct = ex.getResponseHeaders().getContentType();
-        if (ct != null && ct.includes(MediaType.TEXT_HTML)) {
-            log.warn("{}: upstream returned HTML body (truncated): {}", operation, truncate(body, MAX_LOG_BODY));
+        MediaType ct = Optional.ofNullable(ex.getResponseHeaders())
+                .map(headers -> headers.getContentType())
+                .orElse(null);
+        if (ct != null && !ct.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            log.warn(
+                    "{}: upstream returned unexpected content-type={} body(truncated)={}",
+                    operation,
+                    ct,
+                    truncate(body, MAX_LOG_BODY)
+            );
         }
     }
 
