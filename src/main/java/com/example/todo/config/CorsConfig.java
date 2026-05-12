@@ -1,6 +1,7 @@
 package com.example.todo.config;
 
 import com.example.todo.controller.TaskController;
+import com.example.todo.logging.TraceIdFilter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -14,7 +15,11 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("Authorization", "Content-Type")
-                .exposedHeaders(TaskController.X_TOTAL_COUNT, ApiVersionHeaderFilter.X_API_VERSION)
+                .exposedHeaders(
+                        TaskController.X_TOTAL_COUNT,
+                        ApiVersionHeaderFilter.X_API_VERSION,
+                        TraceIdFilter.X_TRACE_ID_HEADER
+                )
                 .allowCredentials(true);
     }
 }

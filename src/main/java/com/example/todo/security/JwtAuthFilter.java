@@ -1,11 +1,14 @@
 package com.example.todo.security;
 
+import com.example.todo.logging.JwtMaskingUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +22,7 @@ import java.io.IOException;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final JwtUtils jwtUtils;
     private final ObjectMapper objectMapper;
@@ -47,6 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
         try {
             if (!jwtUtils.validateToken(token)) {
+                log.warn("Rejected invalid JWT: {}", JwtMaskingUtils.maskToken(token));
                 respondInvalidToken(request, response, filterChain, "Invalid or expired JWT");
                 return;
             }
@@ -57,6 +62,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
             filterChain.doFilter(request, response);
         } catch (JwtException | IllegalArgumentException e) {
+            log.warn("Rejected JWT parsing failure: {}", JwtMaskingUtils.maskToken(token));
             respondInvalidToken(request, response, filterChain, "Invalid JWT");
         }
     }
