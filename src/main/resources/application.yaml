@@ -6,6 +6,45 @@ app:
   version: 1.0.0
   api:
     version: 2.0.0
+  security:
+    # Override via APP_SECURITY_PASSWORD_PEPPER in real deployments.
+    password-pepper: ${APP_SECURITY_PASSWORD_PEPPER:dev-pepper-change-me}
+  jwt:
+    # Override via JWT_SECRET (min 256 bits for HS256). Dev default is non-production only.
+    secret: ${JWT_SECRET:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+    access-token-validity-ms: ${JWT_ACCESS_TOKEN_VALIDITY_MS:3600000}
+  external-tasks:
+    base-url: ${EXTERNAL_TASKS_BASE_URL:http://127.0.0.1:${server.port}/external/v1}
+    connect-timeout-ms: ${EXTERNAL_TASKS_CONNECT_TIMEOUT_MS:2000}
+    read-timeout-ms: ${EXTERNAL_TASKS_READ_TIMEOUT_MS:5000}
+    user-agent: ${EXTERNAL_TASKS_USER_AGENT:TodoGateway/1.0}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      externalApi:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  ratelimiter:
+    instances:
+      externalApi:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0
 
 springdoc:
   api-docs:
@@ -16,6 +55,8 @@ springdoc:
 spring:
   application:
     name: todo
+  profiles:
+    default: dev
   mvc:
     throw-exception-if-no-handler-found: true
   web:
@@ -25,3 +66,57 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://localhost:5432/todo
+    username: todo
+    password: todo
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:todo_test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true

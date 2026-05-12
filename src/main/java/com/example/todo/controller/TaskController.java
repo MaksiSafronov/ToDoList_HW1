@@ -4,6 +4,7 @@ import com.example.todo.dto.ErrorResponse;
 import com.example.todo.dto.TaskCreateDto;
 import com.example.todo.dto.TaskResponseDto;
 import com.example.todo.dto.TaskUpdateDto;
+import com.example.todo.dto.TaskWithAttachmentsResponseDto;
 import com.example.todo.dto.validation.OnCreate;
 import com.example.todo.dto.validation.OnUpdate;
 import com.example.todo.exception.TaskNotFoundException;
@@ -61,6 +62,23 @@ public class TaskController {
         List<Task> tasks = taskService.findAll();
         List<TaskResponseDto> body = tasks.stream()
                 .map(taskMapper::toResponseDto)
+                .toList();
+        return ResponseEntity.ok()
+                .header(X_TOTAL_COUNT, String.valueOf(tasks.size()))
+                .body(body);
+    }
+
+    @Operation(summary = "Список задач с вложениями",
+            description = "Задачи и вложения загружаются без N+1 (JOIN FETCH на уровне репозитория)")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Список задач с вложениями",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = TaskWithAttachmentsResponseDto.class))))
+    })
+    @GetMapping("/with-attachments")
+    public ResponseEntity<List<TaskWithAttachmentsResponseDto>> getAllWithAttachments() {
+        List<Task> tasks = taskService.findAllWithAttachments();
+        List<TaskWithAttachmentsResponseDto> body = tasks.stream()
+                .map(taskMapper::toResponseWithAttachments)
                 .toList();
         return ResponseEntity.ok()
                 .header(X_TOTAL_COUNT, String.valueOf(tasks.size()))
